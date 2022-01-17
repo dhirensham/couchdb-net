@@ -95,6 +95,28 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
+        public async Task<string?> FindRawAsync(string docId, bool withConflicts = false,
+    CancellationToken cancellationToken = default)
+        {
+            IFlurlRequest request = NewRequest()
+                    .AppendPathSegment(docId);
+
+            if (withConflicts)
+            {
+                request = request.SetQueryParam("conflicts", "true");
+            }
+
+            IFlurlResponse? response = await request
+                .AllowHttpStatus(HttpStatusCode.NotFound)
+                .GetAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            return response != null && response.StatusCode == (int)HttpStatusCode.OK
+                ? await response.GetStringAsync().ConfigureAwait(false)
+                : null;
+        }
+
+        /// <inheritdoc />
         public Task<List<TSource>> QueryAsync(string mangoQueryJson, CancellationToken cancellationToken = default)
         {
             return SendQueryAsync(r => r
@@ -204,6 +226,36 @@ namespace CouchDB.Driver
 
             await UpdateAttachments(document, cancellationToken)
                 .ConfigureAwait(false);
+
+            return document;
+        }
+
+        /// <inheritdoc />
+        public async Task<TSource> AddRawAsync(string documentId, string content, bool batch = false, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(content, nameof(content));
+
+            IFlurlRequest request = NewRequest()
+                .AppendPathSegment(documentId);
+
+            if (batch)
+            {
+                request = request.SetQueryParam("batch", "ok");
+            }
+
+            var json = Newtonsoft.Json.Linq.JObject.Parse(content);
+            json.Remove("_rev");
+
+            DocumentSaveResponse response = await request
+                .WithHeader("Content-Type", "application/json")
+                .WithHeader("Accept", "*/*")
+                .PutJsonAsync(json, cancellationToken)
+                .ReceiveJson<DocumentSaveResponse>()
+                .SendRequestAsync()
+                .ConfigureAwait(false);
+
+            var document = Activator.CreateInstance<TSource>();
+            document.ProcessSaveResponse(response);
 
             return document;
         }

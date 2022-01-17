@@ -31,6 +31,15 @@ namespace CouchDB.Driver
         Task<TSource?> FindAsync(string docId, bool withConflicts = false, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Finds the document with the given ID. If no document is found, then null is returned. Otherwise the raw document content is returned
+        /// </summary>
+        /// <param name="docId">The document ID.</param>
+        /// <param name="withConflicts">Set if conflicts array should be included.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the element found, or null.</returns>
+        Task<string?> FindRawAsync(string docId, bool withConflicts = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Finds all documents matching the MangoQuery.
         /// </summary>
         /// <param name="mangoQueryJson">The JSON representing the Mango query.</param>
@@ -62,6 +71,15 @@ namespace CouchDB.Driver
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the element created.</returns>
         Task<TSource> AddAsync(TSource document, bool batch = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates a new document and returns it.
+        /// </summary>
+        /// <param name="document">The document to create.</param>
+        /// <param name="batch">Stores document in batch mode.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the element created.</returns>
+        Task<TSource> AddRawAsync(string documentId, string content, bool batch = false, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates the document with the given ID.
