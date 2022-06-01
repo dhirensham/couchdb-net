@@ -37,6 +37,9 @@ namespace CouchDB.Driver.Types
         [JsonProperty("rev", NullValueHandling = NullValueHandling.Ignore)]
         private string RevOther { set => Rev = value; }
 
+        public bool ShouldSerialize_conflicts() => false;
+        public bool ShouldSerializeAttachmentsParsed() => false;
+
         [DataMember]
         [JsonProperty("_conflicts")]
         private readonly List<string> _conflicts;
