@@ -32,7 +32,7 @@ namespace CouchDB.Driver.Types
         /// </summary>
         [DataMember]
         [JsonProperty("_rev", NullValueHandling = NullValueHandling.Ignore)]
-        public string Rev { get; set; }
+        public virtual string Rev { get; set; }
         [DataMember]
         [JsonProperty("rev", NullValueHandling = NullValueHandling.Ignore)]
         private string RevOther { set => Rev = value; }
