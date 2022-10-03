@@ -293,6 +293,36 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
+        public async Task<TSource> AddOrUpdateRawAsync(string documentId, string content, bool batch = false, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(content, nameof(content));
+
+            if (string.IsNullOrEmpty(documentId))
+            {
+                throw new InvalidOperationException("Cannot add or update a document without an ID.");
+            }
+
+            IFlurlRequest request = NewRequest()
+                .AppendPathSegment(documentId);
+
+            if (batch)
+            {
+                request = request.SetQueryParam("batch", "ok");
+            }
+
+            DocumentSaveResponse response = await request
+                .PutJsonAsync(content, cancellationToken)
+                .ReceiveJson<DocumentSaveResponse>()
+                .SendRequestAsync()
+                .ConfigureAwait(false);
+
+            var document = Activator.CreateInstance<TSource>();
+            document.ProcessSaveResponse(response);
+
+            return document;
+        }
+
+        /// <inheritdoc />
         public async Task RemoveAsync(TSource document, bool batch = false, CancellationToken cancellationToken = default)
         {
             Check.NotNull(document, nameof(document));
