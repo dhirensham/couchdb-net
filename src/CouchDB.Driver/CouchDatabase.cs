@@ -310,8 +310,13 @@ namespace CouchDB.Driver
                 request = request.SetQueryParam("batch", "ok");
             }
 
+            var json = Newtonsoft.Json.Linq.JObject.Parse(content);
+            json["_id"] = documentId;
+
             DocumentSaveResponse response = await request
-                .PutJsonAsync(content, cancellationToken)
+                .WithHeader("Content-Type", "application/json")
+                .WithHeader("Accept", "*/*")
+                .PutJsonAsync(json, cancellationToken)
                 .ReceiveJson<DocumentSaveResponse>()
                 .SendRequestAsync()
                 .ConfigureAwait(false);
