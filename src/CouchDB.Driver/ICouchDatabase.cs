@@ -97,7 +97,7 @@ namespace CouchDB.Driver
         /// <param name="batch">Stores document in batch mode.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the element created or updated.</returns>
-        Task<TSource> AddOrUpdateRawAsync(string documentId, string content, bool batch = false, CancellationToken cancellationToken = default);
+        Task<TSource> AddOrUpdateRawAsync(string documentId, string content, string? revisionId = null, bool batch = false, CancellationToken cancellationToken = default);
 
 
         /// <summary>

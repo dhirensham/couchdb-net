@@ -293,7 +293,7 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
-        public async Task<TSource> AddOrUpdateRawAsync(string documentId, string content, bool batch = false, CancellationToken cancellationToken = default)
+        public async Task<TSource> AddOrUpdateRawAsync(string documentId, string content, string? revisionId = null, bool batch = false, CancellationToken cancellationToken = default)
         {
             Check.NotNull(content, nameof(content));
 
@@ -312,6 +312,11 @@ namespace CouchDB.Driver
 
             var json = Newtonsoft.Json.Linq.JObject.Parse(content);
             json["_id"] = documentId;
+
+            if (revisionId != null)
+            {
+                json["_rev"] = revisionId;
+            }
 
             DocumentSaveResponse response = await request
                 .WithHeader("Content-Type", "application/json")
