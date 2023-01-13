@@ -358,6 +358,7 @@ namespace CouchDB.Driver
 
             OperationResult result = await request
                 .AppendPathSegments(persistent ? "_replicator" : "_replicate")
+                .WithTimeout(Convert.ToInt32(replication.Timeout.TotalSeconds))
                 .PostJsonAsync(replication, cancellationToken)
                 .SendRequestAsync()
                 .ReceiveJson<OperationResult>()
@@ -411,6 +412,7 @@ namespace CouchDB.Driver
 
             OperationResult result = await request
                 .AppendPathSegments(persistent ? "_replicator" : "_replicate")
+                .WithTimeout(Convert.ToInt32(replication.Timeout.TotalSeconds))
                 .PostJsonAsync(replication, cancellationToken)
                 .SendRequestAsync()
                 .ReceiveJson<OperationResult>()

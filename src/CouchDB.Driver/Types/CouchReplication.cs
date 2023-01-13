@@ -40,5 +40,7 @@ namespace CouchDB.Driver.Types
         [DataMember]
         [JsonProperty("filter")]
         public string? Filter { get; set; }
+
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100);
     }
 }
