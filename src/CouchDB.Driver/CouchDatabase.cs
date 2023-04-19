@@ -278,7 +278,6 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
-        public async Task<TSource> AddOrUpdateAsync(TSource document, bool batch = false, CancellationToken cancellationToken = default)
         public Task<TSource> AddOrUpdateAsync(TSource document, bool batch = false, CancellationToken cancellationToken = default)
             => AddOrUpdateAsync(document, new AddOrUpdateOptions { Batch = batch }, cancellationToken);
 
