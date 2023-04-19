@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -195,12 +195,12 @@ namespace CouchDB.Driver.Shared
                 mi => mi.Name == nameof(Queryable.Max) && mi.GetParameters().Length == 1);
 
             ElementAt = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.ElementAt)
-                && mi.GetParameters().Length == 2
+                mi => mi.Name == nameof(Queryable.ElementAt) 
+                && mi.GetParameters().Length == 2 
                 && mi.GetParameters()[1].ParameterType == typeof(int));
             ElementAtOrDefault = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.ElementAtOrDefault)
-                && mi.GetParameters().Length == 2
+                mi => mi.Name == nameof(Queryable.ElementAtOrDefault) 
+                && mi.GetParameters().Length == 2 
                 && mi.GetParameters()[1].ParameterType == typeof(int));
             FirstWithoutPredicate = queryableMethods.Single(
                 mi => mi.Name == nameof(Queryable.First) && mi.GetParameters().Length == 1);
@@ -254,7 +254,7 @@ namespace CouchDB.Driver.Shared
             Skip = queryableMethods.Single(
                 mi => mi.Name == nameof(Queryable.Skip) && mi.GetParameters().Length == 2);
             Take = queryableMethods.Single(
-                mi => mi.Name == nameof(Queryable.Take)
+                mi => mi.Name == nameof(Queryable.Take) 
                 && mi.GetParameters().Length == 2
                 && mi.GetParameters()[1].ParameterType == typeof(int));
             SkipWhile = queryableMethods.Single(

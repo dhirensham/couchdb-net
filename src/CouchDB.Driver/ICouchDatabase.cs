@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using CouchDB.Driver.ChangesFeed;
 using CouchDB.Driver.ChangesFeed.Responses;
 using CouchDB.Driver.Indexes;
 using CouchDB.Driver.Local;
+using CouchDB.Driver.DatabaseApiMethodOptions;
 using CouchDB.Driver.Security;
 using CouchDB.Driver.Types;
 using CouchDB.Driver.Views;
@@ -29,6 +31,15 @@ namespace CouchDB.Driver
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the element found, or null.</returns>
         Task<TSource?> FindAsync(string docId, bool withConflicts = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Finds the document with the given ID. If no document is found, then null is returned.
+        /// </summary>
+        /// <param name="docId">The document ID.</param>
+        /// <param name="options">Set of options available for GET /{db}/{docid}</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the element found, or null</returns>
+        Task<TSource?> FindAsync(string docId, FindOptions options, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Finds the document with the given ID. If no document is found, then null is returned. Otherwise the raw document content is returned
@@ -76,6 +87,15 @@ namespace CouchDB.Driver
         /// Creates a new document and returns it.
         /// </summary>
         /// <param name="document">The document to create.</param>
+        /// <param name="options">Set of options available for both PUT /{db}/{docid} and POST /{db}</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the element created.</returns>
+        Task<TSource> AddAsync(TSource document, AddOptions options, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates a new document and returns it.
+        /// </summary>
+        /// <param name="document">The document to create.</param>
         /// <param name="batch">Stores document in batch mode.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the element created.</returns>
@@ -89,6 +109,15 @@ namespace CouchDB.Driver
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the element created or updated.</returns>
         Task<TSource> AddOrUpdateAsync(TSource document, bool batch = false, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates or updates the document with the given ID.
+        /// </summary>
+        /// <param name="document">The document to create or update</param>
+        /// <param name="options">Set of options available for PUT /{db}/{docid}</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the element created or updated.</returns>
+        Task<TSource> AddOrUpdateAsync(TSource document, AddOrUpdateOptions options, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Creates or updates the document with the given ID.
@@ -117,6 +146,22 @@ namespace CouchDB.Driver
         /// <returns>A task that represents the asynchronous operation. The task result contains the elements created or updated.</returns>
         Task<IEnumerable<TSource>> AddOrUpdateRangeAsync(IList<TSource> documents, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Delete multiple documents based on their ID and revision.
+        /// </summary>
+        /// <param name="documents">The documents to delete.</param>
+        /// <param name="cancellationToken"> <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task DeleteRangeAsync(IEnumerable<TSource> documents, CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// Delete multiple documents based on their ID and revision.
+        /// </summary>
+        /// <param name="documentIds">Documents to delete</param>
+        /// <param name="cancellationToken"> <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        Task DeleteRangeAsync(IEnumerable<DocumentId> documentIds, CancellationToken cancellationToken = default);
+        
         /// <summary>
         /// Executes the specified view function from the specified design document.
         /// </summary>
@@ -255,6 +300,14 @@ namespace CouchDB.Driver
         /// <returns>A task that represents the asynchronous operation. The task result contains the path of the download file.</returns>
         Task<string> DownloadAttachmentAsync(CouchAttachment attachment, string localFolderPath,
             string? localFileName = null, int bufferSize = 4096, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Asynchronously downloads a specific attachment as stream.
+        /// </summary>
+        /// <param name="attachment">The attachment to download.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains of the file stream.</returns>
+        Task<Stream> DownloadAttachmentAsStreamAsync(CouchAttachment attachment, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Requests compaction of the specified database.

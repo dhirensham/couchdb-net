@@ -1,4 +1,4 @@
-[![Downloads](https://img.shields.io/nuget/dt/CouchDB.NET.svg)](https://www.nuget.org/packages/CouchDB.NET/)
+﻿[![Downloads](https://img.shields.io/nuget/dt/CouchDB.NET.svg)](https://www.nuget.org/packages/CouchDB.NET/)
 
 # CouchDB.NET
 
@@ -277,6 +277,8 @@ var list = await rebels.QueryAsync(someMangoJson);
 var list = await rebels.QueryAsync(someMangoObject);
 // Bulk
 await rebels.AddOrUpdateRangeAsync(moreRebels);
+await rebels.DeleteRangeAsync(ids);
+await rebels.DeleteRangeAsync(moreRebels);
 // Utils
 await rebels.CompactAsync();
 var info = await rebels.GetInfoAsync();
@@ -385,7 +387,20 @@ foreach (CouchAttachment attachment in luke.Attachments)
 
 // Download
 string downloadFilePath = await rebels.DownloadAttachment(attachment, downloadFolderPath, "luke-downloaded.txt");
+//or
+Stream responseStream = await rebels.DownloadAttachmentAsStreamAsync(attachment);
 ```
+
+## Revisions
+
+The options for `FindAsync(..)` and `AddOrUpdateAsync(..)` support passing revision:
+
+```csharp
+await _rebels.FindAsync("1", new FindOptions { Rev = "1-xxx" });
+await _rebels.AddOrUpdateAsync(r, new AddOrUpdateOptions { Rev = "1-xxx" });
+```
+
+For attachements revisions are supported by `CouchAttachment` class which is passing `DocumentRev` to `DownloadAttachmentAsync(..)` and `DownloadAttachmentAsStreamAsync(..)`.
 
 ## DB Changes Feed
 
@@ -729,10 +744,16 @@ Also, the configurator has `ConfigureFlurlClient` to set custom HTTP client opti
 
 ## Contributors
 
-Thanks to [Ben Origas](https://github.com/borigas) for features, ideas and tests like SSL custom validation, multi queryable, async deadlock, cookie authenication and many others.
+[Ben Origas](https://github.com/borigas): Features, ideas and tests like SSL custom validation, multi queryable, async deadlock, cookie authentication and many others.
 
-Thanks to [n9](https://github.com/n9) for proxy authentication, some bug fixes, suggestions and the great feedback on the changes feed feature!
+[n9](https://github.com/n9): Proxy authentication, some bug fixes, suggestions and the great feedback on the changes feed feature!
 
-Thanks to [Marc](https://github.com/bender-ristone) for NullValueHandling, bug fixes and suggestions!
+[Marc](https://github.com/bender-ristone): NullValueHandling, bug fixes and suggestions!
 
-Thanks to [Panos](https://github.com/panoukos41) for the help with Views and Table splitting.
+[Panos](https://github.com/panoukos41): Help with Views and Table splitting.
+
+[Benjamin Höglinger-Stelzer](https://github.com/nefarius), [mwasson74](https://github.com/mwasson74), [Emre ÇAĞLAR](https://github.com/emrecaglar): Attachments improvements and fixes.
+
+[Dhiren Sham](https://github.com/dhirensham): Implementing replication.
+
+[Dmitriy Larionov](https://github.com/dmlarionov): Revisions improvements.
