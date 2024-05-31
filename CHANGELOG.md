@@ -1,8 +1,40 @@
+# 3.6.1 (2024-04-23)
+
+## Bugs
+
+* **Change feed**: Fixed an issue causing an endless change notification for all documents under certain conditions ([#200](https://github.com/matteobortolazzo/couchdb-net/pull/201))
+
+# 3.6.0 (2024-03-11)
+
+## Bugs
+
+* **Change feed**: Fixed automatic resume at last change in continuous feed ([#198](https://github.com/matteobortolazzo/couchdb-net/issues/198))
+
+# 3.5.0 (2024-02-03)
+
+## Features
+
+* **Find**: Added support for fetching attachments with entire content ([#194](https://github.com/matteobortolazzo/couchdb-net/issues/194))
+
+# 3.4.0 (2023-06-21)
+
+## Features
+
+* **Database split**: Configurable field for document discrimination ([#150](https://github.com/matteobortolazzo/couchdb-net/issues/150))
+* **Find**: Added all options and responses ([#182](https://github.com/matteobortolazzo/couchdb-net/issues/182))
+* **Change feed**: Adds support for database split ([#187](https://github.com/matteobortolazzo/couchdb-net/issues/187))
+* **Replicas**: Adds `CreateTarget` option ([#189](https://github.com/matteobortolazzo/couchdb-net/issues/189))
+
+## Bugs
+
+* **Queries**: Fix when `In` is called inside `Any` ([#183](https://github.com/matteobortolazzo/couchdb-net/issues/183))
+* **Database split**: Fix `FirstOrDefault` without filter queries ([#185](https://github.com/matteobortolazzo/couchdb-net/issues/185))
+
 # 3.3.1 (2022-10-26)
 
 ## Bug Fixes
 
-* **Dependency Injection**: Fix dependency injection packages references ([#180](https://github.com/matteobortolazzo/couchdb-net/pull/180)) 
+* **Dependency Injection**: Fix dependency injection packages references ([#180](https://github.com/matteobortolazzo/couchdb-net/pull/180))
 
 # 3.3.0 (2022-10-20)
 

@@ -1,3 +1,5 @@
-﻿## Bug Fixes
+﻿# 3.6.1 (2024-04-23)
 
-* **Dependency Injection**: Fix dependency injection packages references ([#180](https://github.com/matteobortolazzo/couchdb-net/pull/180)) 
+## Bugs
+
+* **Change feed**: Fixed an issue causing an endless change notification for all documents under certain conditions ([#200](https://github.com/matteobortolazzo/couchdb-net/pull/201))

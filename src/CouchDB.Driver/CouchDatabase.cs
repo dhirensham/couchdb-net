@@ -81,15 +81,10 @@ namespace CouchDB.Driver
         public async Task<TSource?> FindAsync(string docId, FindOptions options, CancellationToken cancellationToken = default)
         {
             IFlurlRequest request = NewRequest()
+                    .WithHeader("Accept", "application/json")
                     .AppendPathSegment(Uri.EscapeDataString(docId));
 
-            if (options.Conflicts)
-                request = request.SetQueryParam("conflicts", "true");
-
-            if (options.Rev != null)
-                request = request.SetQueryParam("rev", options.Rev);
-
-            IFlurlResponse? response = await request
+            IFlurlResponse? response = await SetFindOptions(request, options)
                 .AllowHttpStatus(HttpStatusCode.NotFound)
                 .GetAsync(cancellationToken)
                 .ConfigureAwait(false);
@@ -512,6 +507,7 @@ namespace CouchDB.Driver
         public async Task<ChangesFeedResponse<TSource>> GetChangesAsync(ChangesFeedOptions? options = null, ChangesFeedFilter? filter = null, CancellationToken cancellationToken = default)
         {
             IFlurlRequest request = NewRequest()
+                .WithHeader("Accept", "application/json")
                 .AppendPathSegment("_changes");
 
             if (options?.LongPoll == true)
@@ -524,11 +520,19 @@ namespace CouchDB.Driver
                 request = request.ApplyQueryParametersOptions(options);
             }
 
-            return filter == null
+            ChangesFeedResponse<TSource>? response = filter == null
                 ? await request.GetJsonAsync<ChangesFeedResponse<TSource>>(cancellationToken)
                     .ConfigureAwait(false)
                 : await request.QueryWithFilterAsync<TSource>(_queryProvider, filter, cancellationToken)
                     .ConfigureAwait(false);
+            
+            if (string.IsNullOrWhiteSpace(_discriminator))
+            {
+                return response;
+            }
+
+            response.Results = response.Results.Where(result => result.Document.SplitDiscriminator == _discriminator).ToArray();
+            return response;
         }
 
         /// <inheritdoc />
@@ -538,6 +542,7 @@ namespace CouchDB.Driver
             var infiniteTimeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
             IFlurlRequest request = NewRequest()
                 .WithTimeout(infiniteTimeout)
+                .WithHeader("Accept", "application/json")
                 .AppendPathSegment("_changes")
                 .SetQueryParam("feed", "continuous");
 
@@ -546,29 +551,45 @@ namespace CouchDB.Driver
                 request = request.ApplyQueryParametersOptions(options);
             }
 
-            await using Stream stream = filter == null
-                ? await request.GetStreamAsync(cancellationToken, HttpCompletionOption.ResponseHeadersRead)
-                    .ConfigureAwait(false)
-                : await request.QueryContinuousWithFilterAsync<TSource>(_queryProvider, filter, cancellationToken)
-                    .ConfigureAwait(false);
+            var lastSequence = options?.Since ?? "0";
 
-            await foreach (var line in stream.ReadLinesAsync(cancellationToken))
+            do
             {
-                if (string.IsNullOrEmpty(line))
-                {
-                    continue;
-                }
+                await using Stream stream = filter == null
+                    ? await request.GetStreamAsync(cancellationToken, HttpCompletionOption.ResponseHeadersRead)
+                        .ConfigureAwait(false)
+                    : await request.QueryContinuousWithFilterAsync<TSource>(_queryProvider, filter, cancellationToken)
+                        .ConfigureAwait(false);
                 
-                MatchCollection matches = _feedChangeLineStartPattern.Matches(line);
-                for (var i = 0; i < matches.Count; i++)
+                await foreach (var line in stream.ReadLinesAsync(cancellationToken))
                 {
-                    var startIndex = matches[i].Index;
-                    var endIndex = i < matches.Count - 1 ? matches[i + 1].Index : line.Length;
-                    var lineLength = endIndex - startIndex;
-                    var substring = line.Substring(startIndex, lineLength);
-                    yield return JsonConvert.DeserializeObject<ChangesFeedResponseResult<TSource>>(substring);
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        continue;
+                    }
+
+                    MatchCollection matches = _feedChangeLineStartPattern.Matches(line);
+                    for (var i = 0; i < matches.Count; i++)
+                    {
+                        var startIndex = matches[i].Index;
+                        var endIndex = i < matches.Count - 1 ? matches[i + 1].Index : line.Length;
+                        var lineLength = endIndex - startIndex;
+                        var substring = line.Substring(startIndex, lineLength);
+                        ChangesFeedResponseResult<TSource>? result =
+                            JsonConvert.DeserializeObject<ChangesFeedResponseResult<TSource>>(substring);
+                        if (string.IsNullOrWhiteSpace(_discriminator) ||
+                            result.Document.SplitDiscriminator == _discriminator)
+                        {
+                            lastSequence = result.Seq;
+                            yield return result;
+                        }
+                    }
                 }
-            }
+
+                // stream broke, pick up listening after last successful processed sequence
+                request = request.SetQueryParam("since", lastSequence);
+
+            } while (!cancellationToken.IsCancellationRequested);
         }
 
         #endregion
@@ -788,6 +809,34 @@ namespace CouchDB.Driver
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
+        public async Task<int> GetRevisionLimitAsync(CancellationToken cancellationToken = default)
+        {
+            return Convert.ToInt32(await NewRequest()
+                .AppendPathSegment("_revs_limit")
+                .GetStringAsync(cancellationToken)
+                .SendRequestAsync()
+                .ConfigureAwait(false));
+        }
+
+        /// <inheritdoc />
+        public async Task SetRevisionLimitAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            using var content = new StringContent(limit.ToString());
+
+            OperationResult result = await NewRequest()
+                .AppendPathSegment("_revs_limit")
+                .PutAsync(content, cancellationToken)
+                .ReceiveJson<OperationResult>()
+                .SendRequestAsync()
+                .ConfigureAwait(false);
+
+            if (!result.Ok)
+            {
+                throw new CouchException("Something wrong happened while updating the revision limit.");
+            }
+        }
+
         #endregion
 
         #region Override
@@ -828,6 +877,64 @@ namespace CouchDB.Driver
             var builder = new IndexBuilder<TSource>(_options, _queryProvider);
             indexBuilderAction(builder);
             return builder;
+        }
+
+        private static IFlurlRequest SetFindOptions(IFlurlRequest request, FindOptions options)
+        {
+            if (options.Attachments)
+            {
+                request = request.SetQueryParam("attachments", "true");
+            }
+            if (options.AttachmentsEncodingInfo)
+            {
+                request = request.SetQueryParam("att_encoding_info", "true");
+            }
+            if (options.AttachmentsSince != null && options.AttachmentsSince.Any())
+            {
+                request = request.SetQueryParam("att_encoding_info", options.AttachmentsSince);
+            }
+            if (options.Conflicts)
+            {
+                request = request.SetQueryParam("conflicts", "true");
+            }
+            if (options.DeleteConflicts)
+            {
+                request = request.SetQueryParam("deleted_conflicts", "true");
+            }
+            if (options.DeleteConflicts)
+            {
+                request = request.SetQueryParam("deleted_conflicts", "true");
+            }
+            if (options.Latest)
+            {
+                request = request.SetQueryParam("latest", "true");
+            }
+            if (options.LocalSequence)
+            {
+                request = request.SetQueryParam("local_seq", "true");
+            }
+            if (options.Meta)
+            {
+                request = request.SetQueryParam("meta", "true");
+            }
+            if (options.OpenRevisions != null && options.OpenRevisions.Any())
+            {
+                request = request.SetQueryParam("open_revs", options.AttachmentsSince);
+            }
+            if (options.Revision != null)
+            {
+                request = request.SetQueryParam("rev", options.Revision);
+            }
+            if (options.Revisions)
+            {
+                request = request.SetQueryParam("revs", "true");
+            }
+            if (options.RevisionsInfo)
+            {
+                request = request.SetQueryParam("revs_info", "true");
+            }
+
+            return request;
         }
 
         #endregion

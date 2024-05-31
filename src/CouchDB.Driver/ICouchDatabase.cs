@@ -250,7 +250,7 @@ namespace CouchDB.Driver
         /// <param name="cancellationToken">A cancellation token to stop receiving changes.</param>
         /// <returns>A IAsyncEnumerable that represents the asynchronous operation. The task result contains the feed change.</returns>
         IAsyncEnumerable<ChangesFeedResponseResult<TSource>> GetContinuousChangesAsync(
-            ChangesFeedOptions options, ChangesFeedFilter filter,
+            ChangesFeedOptions? options, ChangesFeedFilter? filter,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -322,6 +322,21 @@ namespace CouchDB.Driver
         /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the database information.</returns>
         Task<CouchDatabaseInfo> GetInfoAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the revision limit for the specified database.
+        /// </summary>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the database information.</returns>
+        Task<int> GetRevisionLimitAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sets the revision limit for the specified database.
+        /// </summary>
+        /// <param name="limit">The limit to set.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the database information.</returns>
+        Task SetRevisionLimitAsync(int limit, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Get an empty request that targets the current database.
