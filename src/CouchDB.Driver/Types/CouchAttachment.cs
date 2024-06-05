@@ -18,7 +18,7 @@ namespace CouchDB.Driver.Types
         internal string DocumentRev { get; set; }
 
         [JsonIgnore]
-        internal FileInfo FileInfo { get; set; }
+        internal Stream Stream { get; set; }
 
         [JsonIgnore]
         internal bool Deleted { get; set; }

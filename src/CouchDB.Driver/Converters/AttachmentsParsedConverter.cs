@@ -12,7 +12,7 @@ namespace CouchDB.Driver.Converters
             JsonSerializer serializer)
         {
             serializer.Serialize(writer, value
-                .Where(kvp => kvp.Value.FileInfo is null)
+                .Where(kvp => kvp.Value.Stream is null)
                 .ToDictionary(k => k.Key, v => v.Value)
             );
         }
