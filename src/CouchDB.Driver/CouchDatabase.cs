@@ -455,13 +455,12 @@ namespace CouchDB.Driver
         {
             foreach (CouchAttachment attachment in document.Attachments.GetAddedAttachments())
             {
-                if (attachment.FileInfo == null)
+                if (attachment.Stream == null)
                 {
                     continue;
                 }
 
-                using var stream = new StreamContent(
-                    new FileStream(attachment.FileInfo.FullName, FileMode.Open));
+                using var stream = new StreamContent(attachment.Stream);
 
                 AttachmentResult response = await NewRequest()
                     .AppendPathSegment(Uri.EscapeDataString(document.Id))
@@ -475,7 +474,7 @@ namespace CouchDB.Driver
                 if (response.Ok)
                 {
                     document.Rev = response.Rev;
-                    attachment.FileInfo = null;
+                    attachment.Stream.Close();
                 }
             }
 

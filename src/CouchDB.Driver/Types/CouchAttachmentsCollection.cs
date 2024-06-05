@@ -28,13 +28,11 @@ namespace CouchDB.Driver.Types
         public void AddOrUpdate(string path, string contentType)
         {
             FileInfo info = GetFileInfo(path);
-            AddOrUpdate(info.Name, path, contentType);
+            AddOrUpdate(info.Name, info.OpenRead(), contentType);
         }
 
-        public void AddOrUpdate(string attachmentName, string path, string contentType)
+        public void AddOrUpdate(string attachmentName, Stream stream, string contentType)
         {
-            FileInfo info = GetFileInfo(path);
-
             if (!_attachments.ContainsKey(attachmentName))
             {
                 _attachments.Add(attachmentName, new CouchAttachment());
@@ -42,7 +40,7 @@ namespace CouchDB.Driver.Types
 
             CouchAttachment attachment = _attachments[attachmentName];
             attachment.Name = attachmentName;
-            attachment.FileInfo = info;
+            attachment.Stream = stream;
             attachment.ContentType = contentType;
         }
 
@@ -73,7 +71,7 @@ namespace CouchDB.Driver.Types
         internal CouchAttachment[] GetAddedAttachments()
         {
             return _attachments
-                .Where(kv => kv.Value.FileInfo != null)
+                .Where(kv => kv.Value.Stream != null)
                 .Select(kv => kv.Value)
                 .ToArray();
         }
