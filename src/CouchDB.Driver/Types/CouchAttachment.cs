@@ -100,7 +100,7 @@ namespace CouchDB.Driver.Types
         /// </remarks>
         [DataMember]
         [JsonProperty("data")]
-        public string Data { get; private set; }
+        public string Data { get; internal set; }
     }
 }
 #nullable restore

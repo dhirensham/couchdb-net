@@ -105,7 +105,7 @@ namespace CouchDB.Driver.Types
 
         [DataMember, JsonProperty("_attachments", NullValueHandling = NullValueHandling.Ignore)]
         [JsonConverter(typeof(AttachmentsParsedConverter))]
-        private Dictionary<string, CouchAttachment> AttachmentsParsed { get; set; }
+        internal Dictionary<string, CouchAttachment> AttachmentsParsed { get; set; }
 
         /// <summary>
         /// Used for database splitting

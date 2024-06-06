@@ -295,6 +295,21 @@ namespace CouchDB.Driver
             if (options.Rev != null)
                 request = request.SetQueryParam("rev", options.Rev);
 
+            if (document.Attachments != null && document.Attachments.Any())
+            {
+                document.AttachmentsParsed = document.Attachments.ToDictionary(x => x.Name, x =>
+                {
+                    var data = new byte[x.Stream.Length];
+                    x.Stream.Read(data, 0, data.Length);
+
+                    return new CouchAttachment()
+                    {
+                        ContentType = x.ContentType,
+                        Data = Convert.ToBase64String(data)
+                    };
+                });
+            }
+
             document.SplitDiscriminator = _discriminator;
             DocumentSaveResponse response = await request
                 .PutJsonAsync(document, cancellationToken)
@@ -303,8 +318,8 @@ namespace CouchDB.Driver
                 .ConfigureAwait(false);
             document.ProcessSaveResponse(response);
 
-            await UpdateAttachments(document, cancellationToken)
-                .ConfigureAwait(false);
+            //await UpdateAttachments(document, cancellationToken)
+            //    .ConfigureAwait(false);
 
             return document;
         }
