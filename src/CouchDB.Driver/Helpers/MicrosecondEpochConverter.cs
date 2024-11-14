@@ -9,12 +9,15 @@ namespace CouchDB.Driver.Helpers
     {
         private static readonly DateTime Epoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            writer.WriteRawValue(((DateTime)value - Epoch).TotalMilliseconds + "000");
+            if (value != null)
+            {
+                writer.WriteRawValue(((DateTime)value - Epoch).TotalMilliseconds + "000");
+            }
         }
 
-        public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             Check.NotNull(reader, nameof(reader));
 
