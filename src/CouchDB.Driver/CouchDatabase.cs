@@ -591,11 +591,14 @@ namespace CouchDB.Driver
                         var substring = line.Substring(startIndex, lineLength);
                         ChangesFeedResponseResult<TSource>? result =
                             JsonConvert.DeserializeObject<ChangesFeedResponseResult<TSource>>(substring);
-                        if (string.IsNullOrWhiteSpace(_discriminator) ||
-                            result.Document.SplitDiscriminator == _discriminator)
+                        if (result != null)
                         {
-                            lastSequence = result.Seq;
-                            yield return result;
+                            if (string.IsNullOrWhiteSpace(_discriminator) ||
+                                result.Document.SplitDiscriminator == _discriminator)
+                            {
+                                lastSequence = result.Seq;
+                                yield return result;
+                            }
                         }
                     }
                 }

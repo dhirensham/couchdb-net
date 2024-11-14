@@ -18,7 +18,7 @@ namespace CouchDB.Driver.Extensions
                 ? jsonObjectAttributes[0] as JsonObjectAttribute
                 : null;
 
-            if (jsonObject != null)
+            if (jsonObject?.Id != null)
             {
                 return jsonObject.Id;
             }
