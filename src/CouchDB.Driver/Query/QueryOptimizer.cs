@@ -105,9 +105,13 @@ namespace CouchDB.Driver.Query
 
                     while (_nextWhereCalls.Count > 0)
                     {
-                        Expression nextWhereBody = _nextWhereCalls.Dequeue().GetLambdaBody();
-                        conditionExpression = Expression.AndAlso(nextWhereBody, conditionExpression);
-                        conditionExpression = Visit(conditionExpression);
+                        var call = _nextWhereCalls.Dequeue();
+                        if (call != null)
+                        {
+                            Expression nextWhereBody = call.GetLambdaBody();
+                            conditionExpression = Expression.AndAlso(nextWhereBody, conditionExpression);
+                            conditionExpression = Visit(conditionExpression);
+                        }
                     }
 
                     if (conditionExpression.IsBoolean())
