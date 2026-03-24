@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace CouchDB.Driver.Types
 {
@@ -13,12 +11,14 @@ namespace CouchDB.Driver.Types
         [JsonProperty("source")]
         public object? Source { get; internal set; }
 
+        [JsonIgnore]
         public CouchReplicationBasicCredentials? SourceCredentials { get; set; }
 
         [DataMember]
         [JsonProperty("target")]
         public object? Target { get; internal set; }
 
+        [JsonIgnore]
         public CouchReplicationBasicCredentials? TargetCredentials { get; set; }
 
         [DataMember]
@@ -36,7 +36,7 @@ namespace CouchDB.Driver.Types
         [DataMember]
         [JsonProperty("create_target")]
         public bool CreateTarget { get; set; }
-        
+
         [DataMember]
         [JsonProperty("filter")]
         public string? Filter { get; set; }
