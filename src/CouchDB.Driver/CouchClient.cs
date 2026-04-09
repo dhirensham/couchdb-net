@@ -1,20 +1,20 @@
-﻿using CouchDB.Driver.Extensions;
+﻿using CouchDB.Driver.DTOs;
+using CouchDB.Driver.Exceptions;
+using CouchDB.Driver.Extensions;
 using CouchDB.Driver.Helpers;
+using CouchDB.Driver.Options;
+using CouchDB.Driver.Query;
 using CouchDB.Driver.Types;
 using Flurl.Http;
 using Flurl.Http.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Linq;
-using CouchDB.Driver.DTOs;
-using CouchDB.Driver.Exceptions;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
-using CouchDB.Driver.Options;
-using CouchDB.Driver.Query;
+using System.Threading.Tasks;
 
 namespace CouchDB.Driver
 {
@@ -117,14 +117,14 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
-        public async Task<ICouchDatabase<TSource>> CreateDatabaseAsync<TSource>(string database, 
+        public async Task<ICouchDatabase<TSource>> CreateDatabaseAsync<TSource>(string database,
             int? shards = null, int? replicas = null, bool? partitioned = null, string? discriminator = null, CancellationToken cancellationToken = default)
             where TSource : CouchDocument
         {
             QueryContext queryContext = NewQueryContext(database);
             IFlurlResponse response = await CreateDatabaseAsync(queryContext, shards, replicas, partitioned, cancellationToken)
                 .ConfigureAwait(false);
-            
+
             if (response.IsSuccessful())
             {
                 return new CouchDatabase<TSource>(_flurlClient, _options, queryContext, discriminator);
@@ -167,7 +167,7 @@ namespace CouchDB.Driver
                 .SendRequestAsync()
                 .ConfigureAwait(false);
 
-            if (!result.Ok) 
+            if (!result.Ok)
             {
                 throw new CouchException("Something went wrong during the delete.", null, "S");
             }
@@ -420,6 +420,18 @@ namespace CouchDB.Driver
                 .ConfigureAwait(false);
 
             return result.Ok;
+        }
+
+        public async Task<bool> RemoveReplicationAsync(string docId)
+        {
+            var database = await GetOrCreateDatabaseAsync<CouchReplication>("_replicator");
+            var replication = await database.FindAsync(docId);
+            if (replication != null)
+            {
+                await database.RemoveAsync(replication);
+            }
+
+            return true;
         }
         #endregion
 
