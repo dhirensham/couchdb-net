@@ -127,6 +127,25 @@ namespace CouchDB.Driver
         }
 
         /// <inheritdoc />
+        public async Task<bool> IsDeletedAsync(string docId, CancellationToken cancellationToken = default)
+        {
+            IFlurlResponse? response = await NewRequest()
+                .WithHeader("Accept", "application/json")
+                .AppendPathSegment(Uri.EscapeDataString(docId))
+                .AllowHttpStatus(HttpStatusCode.NotFound)
+                .GetAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (response is not { StatusCode: (int)HttpStatusCode.NotFound })
+            {
+                return false;
+            }
+
+            CouchError? error = await response.GetJsonAsync<CouchError>().ConfigureAwait(false);
+            return error?.Reason == "deleted";
+        }
+
+        /// <inheritdoc />
         public Task<List<TSource>> QueryAsync(string mangoQueryJson, CancellationToken cancellationToken = default)
         {
             return SendQueryAsync(r => r

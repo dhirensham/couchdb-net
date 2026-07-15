@@ -51,6 +51,14 @@ namespace CouchDB.Driver
         Task<string?> FindRawAsync(string docId, bool withConflicts = false, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Determines whether the document with the given ID previously existed and has been deleted.
+        /// </summary>
+        /// <param name="docId">The document ID.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken" /> to observe while waiting for the task to complete.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result is true if the document is deleted, false if it exists or never existed.</returns>
+        Task<bool> IsDeletedAsync(string docId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Finds all documents matching the MangoQuery.
         /// </summary>
         /// <param name="mangoQueryJson">The JSON representing the Mango query.</param>
