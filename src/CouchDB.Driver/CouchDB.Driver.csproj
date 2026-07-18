@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>CouchDB.NET</AssemblyName>
     <Authors>Matteo Bortolazzo</Authors>
     <Description>A .NET Standard driver for CouchDB.</Description>
@@ -13,7 +13,8 @@
     <StartupObject />
     <NeutralLanguage>en</NeutralLanguage>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
+    <Nullable>annotations</Nullable>
+    <NoWarn>$(NoWarn);SYSLIB0013;CA2022</NoWarn>
     <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
